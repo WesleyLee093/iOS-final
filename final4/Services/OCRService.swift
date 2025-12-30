@@ -16,6 +16,8 @@ final class OCRService {
             }
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true
+            // Prefer Chinese + English to避免中文掃描亂碼
+            request.recognitionLanguages = ["zh-Hant", "zh-Hans", "en-US"]
             DispatchQueue.global(qos: .userInitiated).async {
                 let handler = VNImageRequestHandler(cgImage: image, options: [:])
                 do {

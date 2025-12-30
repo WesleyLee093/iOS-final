@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct QuizView: View {
+    @EnvironmentObject private var appModel: AppViewModel
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: QuizViewModel
+    @State private var showDeleteAlert = false
 
     init(quiz: Quiz) {
         _viewModel = StateObject(wrappedValue: QuizViewModel(quiz: quiz))
@@ -29,10 +32,30 @@ struct QuizView: View {
                             }
                             .buttonStyle(.plain)
                         }
-                        if viewModel.submitted, let explanation = question.explanation {
-                            Text("解析：\(explanation)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        if viewModel.submitted {
+                            VStack(alignment: .leading, spacing: 4) {
+                                let selectedIndex = viewModel.selections[question.id]
+                                let selectedText = selectedIndex.flatMap { idx in
+                                    question.choices.indices.contains(idx) ? question.choices[idx] : nil
+                                } ?? "未選擇"
+                                let correctText = question.choices[question.answerIndex]
+                                let isCorrect = selectedIndex == question.answerIndex
+
+                                Text(isCorrect ? "答對" : "答錯")
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(isCorrect ? .green : .red)
+                                Text("你的答案：\(selectedText)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text("正確答案：\(correctText)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                if let explanation = question.explanation {
+                                    Text("解析：\(explanation)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
                     }
                     .padding()
@@ -55,6 +78,26 @@ struct QuizView: View {
             .padding()
         }
         .navigationTitle("測驗")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(role: .destructive) {
+                    showDeleteAlert = true
+                } label: {
+                    Image(systemName: "trash")
+                }
+            }
+        }
+        .alert("刪除題庫？", isPresented: $showDeleteAlert) {
+            Button("刪除", role: .destructive) {
+                Task {
+                    await appModel.deleteQuiz(for: viewModel.quiz.noteId)
+                    dismiss()
+                }
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("只會刪除此題庫，不會影響筆記內容。")
+        }
     }
 
     private func selectionState(for question: Question, index: Int) -> String {

@@ -2,8 +2,10 @@ import SwiftUI
 
 struct NoteDetailView: View {
     @EnvironmentObject var appModel: AppViewModel
+    @Environment(\.dismiss) private var dismiss
     let note: Note
     @State private var showShare = false
+    @State private var showDeleteAlert = false
 
     var body: some View {
         ScrollView {
@@ -37,9 +39,27 @@ struct NoteDetailView: View {
                     Image(systemName: "square.and.arrow.up")
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(role: .destructive) {
+                    showDeleteAlert = true
+                } label: {
+                    Image(systemName: "trash")
+                }
+            }
         }
         .navigationTitle(note.title)
         .navigationBarTitleDisplayMode(.inline)
+        .alert("刪除筆記？", isPresented: $showDeleteAlert) {
+            Button("刪除", role: .destructive) {
+                Task {
+                    await appModel.delete(note: note)
+                    dismiss()
+                }
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("刪除筆記會同時移除相關題庫。此動作無法復原。")
+        }
     }
 
     private var header: some View {

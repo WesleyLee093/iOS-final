@@ -211,6 +211,15 @@ final class AppViewModel: ObservableObject {
         }
     }
 
+    func deleteQuiz(for noteId: UUID) async {
+        quizzes.removeValue(forKey: noteId)
+        do {
+            try await localStore.save(quizzes: Array(quizzes.values))
+        } catch {
+            errorMessage = "刪除題庫失敗：\(error.localizedDescription)"
+        }
+    }
+
     func clearError() {
         errorMessage = nil
     }
