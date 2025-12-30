@@ -1,0 +1,12 @@
+[core]
+	bare = false
+	repositoryformatversion = 0
+	filemode = true
+	ignorecase = true
+	precomposeunicode = true
+	logallrefupdates = true
+[branch "main"]
+	gk-last-accessed = 2025-12-24T03:32:27.229Z
+[remote "main"]
+	url = https://github.com/WesleyLee093/iOS-final.git
+	fetch = +refs/heads/*:refs/remotes/main/*
